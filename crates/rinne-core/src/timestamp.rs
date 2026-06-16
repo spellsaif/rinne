@@ -12,4 +12,12 @@ impl Timestamp {
 
         Self(millis)
     }
+
+    pub fn value(self) -> i64 {
+        self.0
+    }
+
+    pub fn from_millis(millis: i64) -> Self {
+        Self(millis)
+    }
 }
