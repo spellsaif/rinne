@@ -6,5 +6,9 @@ pub enum EventError {
     EmptyEventType,
 
     #[error("payload cannot be empty")]
-    EmptyPayload
+    EmptyPayload,
+
+    #[error("event type is required")]
+    MissingEventType,
+
 }

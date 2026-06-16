@@ -21,7 +21,7 @@ pub struct EventBuilder {
 impl EventBuilder {
     pub fn event_type(
         mut self,
-        event_type: impl Into<Arc<str>>>
+        event_type: impl Into<Arc<str>>
     ) -> Self {
         self.event_type = Some(EventType::new(event_type));
 
@@ -32,7 +32,7 @@ impl EventBuilder {
         mut self,
         priority: Priority
     ) -> Self {
-        self.priority = Some(Priority);
+        self.priority = Some(priority);
 
         self
     }
@@ -42,7 +42,7 @@ impl EventBuilder {
         key: impl Into<Arc<str>>,
         value: impl Into<Arc<str>>
     ) -> Self {
-        self.tags.push(key.into(), value.into());
+        self.tags.push((key.into(), value.into()));
 
         self
     }
