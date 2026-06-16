@@ -1,0 +1,11 @@
+[package]
+name = "rinne-wal"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rinne-core = { path = "../rinne-core"}
+
+bytes = "1"
+thiserror = "2"
+uuid = "1"
