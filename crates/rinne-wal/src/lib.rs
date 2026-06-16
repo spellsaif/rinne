@@ -1,6 +1,7 @@
-pub mod error;
-pub mod encoder;
 pub mod decoder;
+pub mod encoder;
+pub mod error;
+pub mod reader;
 
 pub use decoder::decode;
 pub use encoder::encode;

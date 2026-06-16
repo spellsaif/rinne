@@ -1,59 +1,55 @@
-use bytes::{Buf, Bytes};
 use std::sync::Arc;
+
+use bytes::Bytes;
 
 use rinne_core::{Event, EventId, EventType, Priority, Timestamp};
 
-use crate::WalError;
+use crate::{
+    WalError,
+    reader::{read_bytes, read_i64, read_u8, read_u16, read_u32},
+};
 
 pub fn decode(bytes: &[u8]) -> Result<Event, WalError> {
     let mut buf = Bytes::copy_from_slice(bytes);
 
     // UUID
-    let mut uuid_bytes = [0u8; 16];
+    let uuid_bytes = read_bytes(&mut buf, 16)?;
 
-    buf.copy_to_slice(&mut uuid_bytes);
-
-    let id = EventId::from_bytes(uuid_bytes);
+    let id = EventId::from_bytes(uuid_bytes.try_into().expect("uuid must be 16 bytes"));
 
     // Timestamp
-    let timestamp = Timestamp::from_millis(buf.get_i64());
+    let timestamp = Timestamp::from_millis(read_i64(&mut buf)?);
 
     // Priority
-    let priority = Priority::from_u8(buf.get_u8()).ok_or(WalError::InvalidPriority)?;
+    let priority = Priority::from_u8(read_u8(&mut buf)?).ok_or(WalError::InvalidPriority)?;
 
     // Event Type
-    let event_type_len = buf.get_u16() as usize;
+    let event_type_len = read_u16(&mut buf)? as usize;
 
-    let mut event_type_bytes = vec![0u8; event_type_len];
+    let event_type_bytes = read_bytes(&mut buf, event_type_len)?;
 
-    buf.copy_to_slice(&mut event_type_bytes);
+    let event_type_str =
+        std::str::from_utf8(&event_type_bytes).map_err(|_| WalError::InvalidUtf8)?;
 
-    let event_type = std::str::from_utf8(&event_type_bytes).map_err(|_| WalError::InvalidUtf8)?;
+    let event_type = EventType::new(event_type_str);
 
-    let event_type = EventType::new(event_type);
-
-    // Tag count
-    let tag_count = buf.get_u16();
+    // Tags
+    let tag_count = read_u16(&mut buf)?;
 
     let mut tags = Vec::new();
 
-    // Tags
     for _ in 0..tag_count {
         // Key
-        let key_len = buf.get_u16() as usize;
+        let key_len = read_u16(&mut buf)? as usize;
 
-        let mut key_bytes = vec![0u8; key_len];
-
-        buf.copy_to_slice(&mut key_bytes);
+        let key_bytes = read_bytes(&mut buf, key_len)?;
 
         let key = std::str::from_utf8(&key_bytes).map_err(|_| WalError::InvalidUtf8)?;
 
         // Value
-        let value_len = buf.get_u16() as usize;
+        let value_len = read_u16(&mut buf)? as usize;
 
-        let mut value_bytes = vec![0u8; value_len];
-
-        buf.copy_to_slice(&mut value_bytes);
+        let value_bytes = read_bytes(&mut buf, value_len)?;
 
         let value = std::str::from_utf8(&value_bytes).map_err(|_| WalError::InvalidUtf8)?;
 
@@ -61,11 +57,9 @@ pub fn decode(bytes: &[u8]) -> Result<Event, WalError> {
     }
 
     // Payload
-    let payload_len = buf.get_u32() as usize;
+    let payload_len = read_u32(&mut buf)? as usize;
 
-    let mut payload_bytes = vec![0u8; payload_len];
-
-    buf.copy_to_slice(&mut payload_bytes);
+    let payload_bytes = read_bytes(&mut buf, payload_len)?;
 
     let payload = bytes::Bytes::from(payload_bytes);
 
