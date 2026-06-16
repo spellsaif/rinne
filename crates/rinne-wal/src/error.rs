@@ -11,4 +11,6 @@ pub enum WalError {
     #[error("invalid priority")]
     InvalidPriority,
 
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
