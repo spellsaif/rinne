@@ -7,4 +7,8 @@ impl EventType {
     pub fn new(value: impl Into<Arc<str>>) -> Self {
         Self(value.into())
     }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
