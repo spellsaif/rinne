@@ -1,4 +1,7 @@
 
+#[cfg(test)]
+mod event_tests;
+
 pub mod event;
 pub mod error;
 pub mod event_builder;
